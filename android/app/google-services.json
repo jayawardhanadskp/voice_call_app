@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "299098846318",
+    "project_id": "voice-call-app-2d2bf",
+    "storage_bucket": "voice-call-app-2d2bf.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:299098846318:android:71cd91d8c8cfeee83ea27f",
+        "android_client_info": {
+          "package_name": "com.example.voice_call_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDXILyemAGEx1siZ36lBWEhxI0PIjI3kBw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
