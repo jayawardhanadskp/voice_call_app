@@ -16,9 +16,10 @@ class AgoraService {
     await _engine.setChannelProfile(ChannelProfileType.channelProfileCommunication);
     await _engine.enableAudio();
 
+
   }
 
-  Future<void> joinChannel(String channelName) async {
+  Future<void> joinChannel(String channelName,) async {
     await _engine.joinChannel(
       token: '007eJxTYLhg49/OpLTn2mPdnfIzlVedrjQXevvQdt4ilUv1/+YsS0tWYEhMTTa3SDS0NEpJMjYxSzJNTDZKTDQyNzI1NjAxNE40D/6WldYQyMgwv6+XlZGBlYGRgYkBxGdgAADBWR6s',
       channelId: channelName,
