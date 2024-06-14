@@ -68,12 +68,33 @@ class FirebaseService {
         body: jsonEncode(
           <String, dynamic>{
             'to': token,
-            'data': <String, dynamic>{'message': message},
+            'notification': {
+              'title': 'Incoming Call',
+              'body': message,
+              'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+            },
+            'data': {
+              'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+              'message': message,
+              'actions': [
+                {
+                  'action': 'ANSWER_CALL',
+                  'title': 'Answer',
+                },
+                {
+                  'action': 'REJECT_CALL',
+                  'title': 'Reject',
+                }
+              ]
+            }
           },
         ),
       );
+      print('send message successful');
     } catch (e) {
       print('Error sending FCM message: $e');
     }
   }
+
+
 }
