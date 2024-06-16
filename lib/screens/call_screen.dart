@@ -1,52 +1,86 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../model/user_model.dart';
+import 'package:voice_call_app/screens/calling_screen.dart';
+
 import '../services/agora_service.dart';
-import '../services/firebase_messaging_service.dart';
+import '../services/firebase_helper.dart';
 
 class CallScreen extends StatefulWidget {
-  final UserModel user;
-  final String token;
 
-  CallScreen({required this.user, required this.token});
+  final String token;
+  final String selectUser;
+  const CallScreen({
+    Key? key,
+    required this.token,
+    required this.selectUser
+  }): super(key: key);
 
   @override
-  _CallScreenState createState() => _CallScreenState();
+  State<CallScreen> createState() => _CallScreenState();
 }
 
 class _CallScreenState extends State<CallScreen> {
-  AgoraService _agoraService = AgoraService();
-  FirebaseService _firebaseService = FirebaseService();
+  final AgoraService _agoraService = AgoraService();
+String currentUserName = '';
 
-  late String _channelName;
+late String _channelName;
 
-  @override
+@override
   void initState() {
+  _getCurrentUserName();
+  _channelName = 'channelName';
+  _initAgora();
     super.initState();
-    _channelName = 'channel_${widget.user.id}';
-    _initAgora();
   }
 
-  Future<void> _initAgora() async {
-    await _agoraService.initializeAgora();
-  }
+Future<void> _initAgora() async {
+  await _agoraService.initializeAgora();
+}
 
+  Future<void> _getCurrentUserName() async{
+  try{
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      String uid = user.uid;
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      setState(() {
+        currentUserName = userDoc['name'];
+      });
+    }  
+  } catch (e) {
+    print('Fail to get user name: $e');
+  }
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Call ${widget.user.name}'),
-      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
+          children:[
 
             const SizedBox(height: 20),
             GestureDetector(
               onTap: () async {
-                await _agoraService.joinChannel(_channelName);
-                await _firebaseService.sendMessage(widget.token, 'Incoming call from ${widget.user.name}');
-              },
+
+                await _agoraService.joinChannel('007eJxTYLjPar3txOPi5qltzzZXuIgeOznv8l2VV0z1oXtaYto6pvkrMCSmJptbJBpaGqUkGZuYJZkmJhslJhqZG5kaG5gYGieav/mfm9YQyMjwMOszIyMDBIL4hHUyMAAATHMppQ==', _channelName);
+
+                await FirebaseHelper.sendNotification(
+                  title: 'You Have a Cll',
+                  body: 'call from $currentUserName',
+                  token: widget.token,
+                  channelName: _channelName,
+                  callerName: currentUserName,
+                );
+
+                Navigator.push(context, MaterialPageRoute(
+                    builder: (context)
+                    => CallingScreen(
+                      selectUser: widget.selectUser,
+                )));
+                },
               child: Container(
                 height: 200,
                 width: 200,
