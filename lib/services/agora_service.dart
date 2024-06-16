@@ -1,10 +1,13 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class AgoraService {
   late RtcEngine _engine;
+  final Completer<void> _initializationCompleter = Completer<void>();
 
   Future<void> initializeAgora() async {
     _engine = await createAgoraRtcEngine();
@@ -16,12 +19,38 @@ class AgoraService {
     await _engine.setChannelProfile(ChannelProfileType.channelProfileCommunication);
     await _engine.enableAudio();
 
+    await [Permission.microphone].request();
+
+    _initializationCompleter.complete();
+
+    _setupEventHandlers();
+
 
   }
 
-  Future<void> joinChannel(String channelName,) async {
+
+  void _setupEventHandlers() {
+    _engine.registerEventHandler(
+      RtcEngineEventHandler(
+        onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
+          print('onJoinChannelSuccess: ${connection.channelId}, $elapsed');
+        },
+        onUserJoined: (RtcConnection connection, int uid, int elapsed) {
+          print('onUserJoined: $uid, $elapsed');
+        },
+        onLeaveChannel: (RtcConnection connection, RtcStats stats) {
+          print('onLeaveChannel');
+        },
+        onUserOffline: (RtcConnection connection, int uid, UserOfflineReasonType reason) {
+          print('onUserOffline: $uid, $reason');
+        },
+      ),
+    );
+  }
+
+  Future<void> joinChannel(String token, String channelName,) async {
     await _engine.joinChannel(
-      token: '007eJxTYLhg49/OpLTn2mPdnfIzlVedrjQXevvQdt4ilUv1/+YsS0tWYEhMTTa3SDS0NEpJMjYxSzJNTDZKTDQyNzI1NjAxNE40D/6WldYQyMgwv6+XlZGBlYGRgYkBxGdgAADBWR6s',
+      token: token,
       channelId: channelName,
       uid: 0,
       options: const ChannelMediaOptions(
