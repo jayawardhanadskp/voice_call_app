@@ -1,25 +1,31 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import '../model/user_model.dart';
+
 import '../services/agora_service.dart';
-import '../services/firebase_messaging_service.dart';
 
-class CallingScreen extends StatefulWidget {
-  final UserModel user;
-  final String token;
+class OngoingCallScreen extends StatefulWidget {
 
-  CallingScreen({required this.user, required this.token});
+  final String channelName;
+  final String callerName;
+  final AgoraService agoraService;
+
+  const OngoingCallScreen({
+    Key? key,
+    required this.channelName,
+    required this.callerName,
+    required this.agoraService,
+  }) : super(key: key);
 
   @override
-  _CallScreenState createState() => _CallScreenState();
+  State<OngoingCallScreen> createState() => _OngoingCallScreenState();
 }
 
-class _CallScreenState extends State<CallingScreen> {
-  final AgoraService _agoraService = AgoraService();
-  final FirebaseService _firebaseService = FirebaseService();
+class _OngoingCallScreenState extends State<OngoingCallScreen> {
 
+  final AgoraService _agoraService = AgoraService();
   late String _channelName;
+
   late Timer _timer;
   int _callDuration = 0;
   String _formattedDuration = "00:00";
@@ -27,26 +33,25 @@ class _CallScreenState extends State<CallingScreen> {
   @override
   void initState() {
     super.initState();
-    _channelName = 'channel_${widget.user.id}';
-    _initAgora();
+   _channelName = widget.channelName;
+   _initAgora();
     _startCallTimer();
+  }
+
+  Future<void> _initAgora() async {
+    await _agoraService.initializeAgora();
+    await _agoraService.joinChannel('007eJxTYLjPar3txOPi5qltzzZXuIgeOznv8l2VV0z1oXtaYto6pvkrMCSmJptbJBpaGqUkGZuYJZkmJhslJhqZG5kaG5gYGieav/mfm9YQyMjwMOszIyMDBIL4hHUyMAAATHMppQ==',_channelName);
   }
 
   @override
   void dispose() {
     _timer.cancel();
-    _agoraService.leaveChannel();
+   widget.agoraService.leaveChannel();
     super.dispose();
   }
 
-  Future<void> _initAgora() async {
-    await _agoraService.initializeAgora();
-    await _agoraService.joinChannel(_channelName);
-    await _firebaseService.sendMessage(widget.token, 'Incoming call from ${widget.user.name}');
-  }
-
   void _startCallTimer() {
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         _callDuration++;
         _formattedDuration = _formatDuration(_callDuration);
@@ -60,43 +65,33 @@ class _CallScreenState extends State<CallingScreen> {
     return "$minutes:$secs";
   }
 
-  void _endCall() {
-    _timer.cancel();
-    _agoraService.leaveChannel();
-    Navigator.pop(context);
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Call ${widget.user.name}'),
-      ),
+      backgroundColor: Colors.blue[100],
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
             Text(
               'Call Duration: $_formattedDuration',
-              style: TextStyle(fontSize: 24),
+              style: const TextStyle(fontSize: 25, color: Colors.white),
             ),
-            const SizedBox(height: 20),
-            GestureDetector(
-              onTap: _endCall,
-              child: Container(
-                height: 100,
-                width: 100,
-                decoration: BoxDecoration(
-                  color: Colors.red,
-                  borderRadius: BorderRadius.circular(50),
+            const SizedBox(height: 300,),
+
+
+            ElevatedButton(
+                onPressed: () async{
+                  await _agoraService.leaveChannel();
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+
                 ),
-                child: const Center(
-                  child: Text(
-                    'End Call',
-                    style: TextStyle(fontSize: 20, color: Colors.white),
-                  ),
-                ),
-              ),
+                child: const Text('End Call', style: TextStyle(color: Colors.white),)
             ),
           ],
         ),
