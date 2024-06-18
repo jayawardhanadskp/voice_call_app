@@ -65,7 +65,10 @@ Future<void> _initAgora() async {
             GestureDetector(
               onTap: () async {
 
-                await _agoraService.joinChannel('007eJxTYLjPar3txOPi5qltzzZXuIgeOznv8l2VV0z1oXtaYto6pvkrMCSmJptbJBpaGqUkGZuYJZkmJhslJhqZG5kaG5gYGieav/mfm9YQyMjwMOszIyMDBIL4hHUyMAAATHMppQ==', _channelName);
+                await _agoraService.joinChannel(
+                    '007eJxTYPhpwDqrJnlh49zOC+I1K65nVQetyzh6ZW709Pjlsg284r0KDImpyeYWiYaWRilJxiZmSaaJyUaJiUbmRqbGBiaGxonmLd/z0hoCGRmUPgQxMjJAIIhPWCcDAwBOACar',
+                    _channelName
+                );
 
                 await FirebaseHelper.sendNotification(
                   title: 'You Have a Cll',
@@ -75,10 +78,19 @@ Future<void> _initAgora() async {
                   callerName: currentUserName,
                 );
 
+                await CallStatus.createCall(
+                     _channelName,
+                     currentUserName,
+                     _channelName
+                );
+
                 Navigator.push(context, MaterialPageRoute(
                     builder: (context)
                     => CallingScreen(
                       selectUser: widget.selectUser,
+                        channelName: _channelName,
+                        callerName: currentUserName,
+                        agoraService: _agoraService,
                 )));
                 },
               child: Container(
