@@ -149,3 +149,23 @@ class FirebaseHelper {
     }
   }
 }
+
+class CallStatus {
+  static final FirebaseFirestore _db = FirebaseFirestore.instance;
+
+  static Future<void> createCall(String channelId, String callerUid, String calleeUid) async {
+    await _db.collection('calls').doc(channelId).set({
+      'callerUid': callerUid,
+      'calleeUid': calleeUid,
+      'status': 'calling',
+    });
+  }
+
+  static Future<void> updateCallStatus(String channelId, String status) async {
+    await _db.collection('calls').doc(channelId).update({'status': status});
+  }
+
+  static Stream<DocumentSnapshot<Map<String, dynamic>>> getCallStatusStream(String channelId) {
+    return _db.collection('calls').doc(channelId).snapshots();
+  }
+}
