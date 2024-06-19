@@ -32,7 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
             final List<UserModel> users = [];
             final List<QueryDocumentSnapshot>? docs = snapshot.data?.docs;
             if (docs == null && docs!.isEmpty) {
-              return Text('No Data');
+              return const Text('No Data');
             }
 
             for(var doc in docs) {
