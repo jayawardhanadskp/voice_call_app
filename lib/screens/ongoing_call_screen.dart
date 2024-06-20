@@ -1,11 +1,8 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
-
 import '../services/agora_service.dart';
 
 class OngoingCallScreen extends StatefulWidget {
-
   final String channelName;
   final String callerName;
   final AgoraService agoraService;
@@ -22,10 +19,7 @@ class OngoingCallScreen extends StatefulWidget {
 }
 
 class _OngoingCallScreenState extends State<OngoingCallScreen> {
-
-  final AgoraService _agoraService = AgoraService();
   late String _channelName;
-
   late Timer _timer;
   int _callDuration = 0;
   String _formattedDuration = "00:00";
@@ -33,20 +27,29 @@ class _OngoingCallScreenState extends State<OngoingCallScreen> {
   @override
   void initState() {
     super.initState();
-   _channelName = widget.channelName;
-   _initAgora();
+    _channelName = widget.channelName;
+    _initAgora();
     _startCallTimer();
   }
 
   Future<void> _initAgora() async {
-    await _agoraService.initializeAgora();
-    await _agoraService.joinChannel('007eJxTYLjPar3txOPi5qltzzZXuIgeOznv8l2VV0z1oXtaYto6pvkrMCSmJptbJBpaGqUkGZuYJZkmJhslJhqZG5kaG5gYGieav/mfm9YQyMjwMOszIyMDBIL4hHUyMAAATHMppQ==',_channelName);
+    try {
+      print("Initializing Agora in OngoingCallScreen...");
+      await widget.agoraService.initializeAgora();
+      await widget.agoraService.joinChannel(
+        '007eJxTYPhpwDqrJnlh49zOC+I1K65nVQetyzh6ZW709Pjlsg284r0KDImpyeYWiYaWRilJxiZmSaaJyUaJiUbmRqbGBiaGxonmLd/z0hoCGRmUPgQxMjJAIIhPWCcDAwBOACar', // Replace with your Agora token
+        _channelName,
+      );
+      print("Agora initialized and channel joined successfully.");
+    } catch (e) {
+      print("Error initializing Agora in OngoingCallScreen: $e");
+    }
   }
 
   @override
   void dispose() {
     _timer.cancel();
-   widget.agoraService.leaveChannel();
+    widget.agoraService.leaveChannel();
     super.dispose();
   }
 
@@ -65,7 +68,6 @@ class _OngoingCallScreenState extends State<OngoingCallScreen> {
     return "$minutes:$secs";
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -79,19 +81,16 @@ class _OngoingCallScreenState extends State<OngoingCallScreen> {
               'Call Duration: $_formattedDuration',
               style: const TextStyle(fontSize: 25, color: Colors.white),
             ),
-            const SizedBox(height: 300,),
-
-
+            const SizedBox(height: 300),
             ElevatedButton(
-                onPressed: () async{
-                  await _agoraService.leaveChannel();
-                  Navigator.pop(context);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-
-                ),
-                child: const Text('End Call', style: TextStyle(color: Colors.white),)
+              onPressed: () async {
+                await widget.agoraService.leaveChannel();
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+              ),
+              child: const Text('End Call', style: TextStyle(color: Colors.white)),
             ),
           ],
         ),
